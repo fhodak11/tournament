@@ -37,11 +37,11 @@ def add_tournament(request):
             teams.append(team)
 
         # Pair up teams and set initial opponents
-        for i in range(0, team_count, 2):
-            teams[i].opponent = teams[i + 1].team_name
-            teams[i + 1].opponent = teams[i].team_name
-            teams[i].save()
-            teams[i + 1].save()
+        # for i in range(0, team_count, 2):
+        #     teams[i].opponent = teams[i + 1].team_name
+        #     teams[i + 1].opponent = teams[i].team_name
+        #     teams[i].save()
+        #     teams[i + 1].save()
 
         # Redirect to the team configuration page for the newly created tournament
         return redirect('configure_tournament', tournament_id=new_tournament.id)
