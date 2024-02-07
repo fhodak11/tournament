@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+    <style>
+        .disabled {
+            opacity: 0.8;
+        }
+
+        .disabled:hover {
+            background-color: #00d1b2;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title">Tournament List</h1>
+            <a class="button is-success" href="add_tournament">Add Tournament</a>
+            <table class="table is-fullwidth">
+                <thead>
+                    <tr>
+                        <th>Tournament Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% for tournament in tournaments %}
+                        <td>{{tournament.tournament}}</td>
+                        <td>
+                            <a class="button is-primary" href="/view_results/{{tournament.id}}">View Results</a> 
+                            {% if tournament.started == False %}
+                            <a class="button is-info" href="configure_tournament/{{tournament.id}}">Update Tournament</a>
+                            {% else %}
+                            <a class="button is-info disabled" href="#">Update Tournament</a>
+                            {% endif %}	
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Add more tournament rows as needed -->
+                </tbody>
+            </table>
+            
+        </div>
+    </section>
+    <script>
+
+    </script>
+</body>
+</html>

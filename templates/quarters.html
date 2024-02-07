@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma-rtl.min.css"> -->
+    <link rel="stylesheet" href="{% static 'bulma/css/bulma-rtl.min.css' %}">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <title>Configure Teams</title>
+    <style>
+        .table-container {
+            margin: 0 auto;
+        }
+
+        /* .team {
+            cursor: pointer;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            height: 60px !important;
+            line-height: 100px;
+        }
+        .team p {
+            margin: 0;
+            width: 80%;
+        }
+        .team a {
+            float: right;
+        } */
+
+        .is-two-thirds {
+            width: 500px !important;
+        }
+
+        .is-one-third {
+            width: 100px !important;
+        }
+
+        .is-one-eight {
+            width: 50px !important;
+        }
+
+        .add-tags {
+            margin-top: 5px
+        }
+
+        .action-btns {
+            display: flex;
+            justify-content: space-around;
+            gap: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="section">
+        <div class="container has-text-centered"> <!-- Center the content -->
+            <h1 class="title">Results for {{ tournament.tournament }}</h1>
+            <div class="table-container"> <!-- Enclose the table in a container for styling -->
+                <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+                    <!-- Adjust width with is-fullwidth -->
+                    <thead>
+                        <tr>
+                            <th class="is-one-eight">#</th> <!-- Larger size with is-two-thirds -->
+                            <th class="is-two-thirds">Team</th> <!-- Larger size with is-two-thirds -->
+                            <th class="is-one-third">Score</th> <!-- Smaller size with is-one-third -->
+                            <th class="is-one-third">Score</th> <!-- Smaller size with is-one-third -->
+                            <th class="is-two-thirds">Opponent</th>
+                            <th class="is-one-third">Action</th> <!-- Smaller size with is-one-third -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for team in teams %}
+                        <tr id="{{team.id}}">
+                            <!-- for loop to number the rows -->
+                            <td>{{ forloop.counter }}</td>
+                            <td class="team">
+                                <div class="select">
+                                    <select>
+                                        {% if team.team.team_name %}
+                                        <option value="{{team.team.team_name}}" selected>{{team.team.team_name}}</option>
+                                        {% else %}
+                                        <option value="">Select team</option>
+                                        {% endif %}
+                                        {% for other_team in teams %}
+                                        <option value="{{other_team.team.team_name}}">{{other_team.team.team_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </td>
+                            <td contenteditable="true">{{team.team_score}}</td>
+                            <td contenteditable="true">{{team.opponent_score}}</td>
+                            <td class="team">
+                                <div class="select">
+                                    <select>
+                                        {% if team.opponent %}
+                                        <option value="{{team.opponent}}" selected>{{team.opponent}}</option>
+                                        {% else %}
+                                        <option value="">Select team</option>
+                                        {% endif %}
+                                        {% for other_team in opponent %}
+                                        <option value="{{other_team.team_name}}">{{other_team.team_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="action-btns">
+                                    <a class="button is-primary" onclick="recordScores('{{team.id}}', this)">
+                                        {% if team.score_modified == True %}
+                                        Recorded
+                                        {% else %}
+                                        Record
+                                        {% endif %}
+                                    </a>
+                                    <!-- <a class="button is-primary" href="#">Update</a> -->
+                                    <!-- <a class="button is-danger" onclick="deleteTeam('{{team.team.id}}')">Delete</a> -->
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a class="button is-success" onclick="nextRound('{{tournament.id}}')">Next</a>
+        </div>
+    </section>
+    <script>
+        function recordScores(id, button) {
+            // get the team name and opponent name from the row that has options select
+            var team_name = document.getElementById(id).children[1].children[0].children[0].value;
+            console.log(team_name);
+            var opponent = document.getElementById(id).children[4].children[0].children[0].value;
+            console.log(opponent);
+            var score1 = document.getElementById(id).children[2].innerText;
+            console.log(score1);
+            var score2 = document.getElementById(id).children[3].innerText;
+            console.log(score2);
+            // check if the team name and opponent name are not empty if empty return false
+            if (team_name == "" || opponent == "" || team_name
+                == "Select team" || opponent == "Select team") {
+                console.log("empty");
+                alert("Please select team and opponent");
+                return false;
+            }
+            if (team_name == opponent) {
+                console.log("same");
+                alert("Team and Opponent cannot be the same");
+                return false;
+            }
+            else {
+                // update the button text
+                button.innerText = "Recorded";
+                // send the data to django server
+                var data = {
+                    "team_name": team_name,
+                    "opponent": opponent,
+                    'team_id': id,
+                    'team_score': score1,
+                    'opponent_score': score2,
+                    'table': 'Quarters'
+                }
+
+                // check that team_name and opponent are not the same
+
+                // ajax to save the data asynchrously
+                $.ajax({
+                    type: "GET",
+                    url: "/record_scores/",
+                    data: data,
+                    success: function (response) {
+                        console.log(response);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+
+        }
+
+        function nextRound(id) {
+            // send the data to django server
+            var data = {
+                'tournament_id': id
+            }
+
+            // check that all scores have been recorded and that team and opponent are not the same
+            var scores = document.querySelectorAll('td[contenteditable="true"]');
+            console.log(scores);
+            for (var i = 0; i < scores.length; i++) {
+                if (scores[i].innerText == "") {
+                    alert("Please record all scores");
+                    return false;
+                }
+            }
+            /*for (var i = 0; i < scores.length; i++) {
+                if (scores[i].innerText == scores[i+1].innerText) {
+                    alert("Team and Opponent cannot be the same");
+                    return false;
+                }
+            }*/
+            console.log(data);
+            // navigate to the next round
+            window.location.href = "/view_semi_finals/" + id;
+            // ajax to save the data asynchrously
+            /*$.ajax({
+                type: "GET",
+                url: "/next_round/",
+                data: data,
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });*/
+        }
+    </script>
+</body>
+
+</html>

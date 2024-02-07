@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma-rtl.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <title>Configure Teams</title>
+    <style>
+        .table-container {
+            margin: 0 auto;
+        }
+
+        /* .team {
+            cursor: pointer;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            height: 60px !important;
+            line-height: 100px;
+        }
+        .team p {
+            margin: 0;
+            width: 80%;
+        }
+        .team a {
+            float: right;
+        } */
+        
+        .is-two-thirds {
+            width: 500px !important;
+        }
+        .is-one-third {
+            width: 100px !important;
+        }
+        .is-one-eight {
+            width: 50px !important;
+        }
+
+        .add-tags {
+            margin-top: 5px
+        }
+        .action-btns {
+            display: flex;
+            justify-content: space-around;
+            gap: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <section class="section">
+        <div class="container has-text-centered"> <!-- Center the content -->
+            <h1 class="title">Configure Teams for {{ tournament.tournament }}</h1>
+            <div class="table-container"> <!-- Enclose the table in a container for styling -->
+                <table class="table is-bordered is-striped is-hoverable is-fullwidth"> <!-- Adjust width with is-fullwidth -->
+                    <thead>
+                        <tr>
+                            <th class="is-one-eight">#</th> <!-- Larger size with is-two-thirds -->
+                            <th class="is-two-thirds">Team</th> <!-- Larger size with is-two-thirds -->
+                            <!-- <th class="is-two-thirds">Opponent</th>  -->
+                            <th class="is-one-third">Action</th> <!-- Smaller size with is-one-third -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for team in teams %}
+                            <tr id="{{team.id}}">
+                                <!-- for loop to number the rows -->
+                                <td>{{ forloop.counter }}</td>
+                                <td class="team" contenteditable="true">{{ team.team_name }}</td>
+
+                                <!-- <td class="opponent" contenteditable="true">{{ team.opponent }}</td> -->
+                                <td>
+                                    <div class="action-btns">
+                                        <a class="button is-primary" onclick="addTeam('{{team.id}}', this)">
+                                        {% if team.modified == True %}
+                                            Added
+                                        {% else %}
+                                            Add
+                                        {% endif %}
+                                        </a>
+                                        <!-- <a class="button is-primary" href="#">Update</a> -->
+                                        <a class="button is-danger" onclick="deleteTeam('{{team.id}}')">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a class="button is-success" href="/start_tournament/{{tournament.id}}">Start Tournament</a>
+        </div>
+    </section>
+    <script>
+        function addTeam(id, button) {
+            // get the team name and opponent name from the row
+            var team_name = document.getElementById(id).children[1].innerText;
+            var opponent = document.getElementById(id).children[2].innerText;
+
+            // check if the team name and opponent name are not empty if empty return false
+            if (team_name == "" || opponent == "") {
+                console.log("empty");
+                return false;
+            } else {
+                // update the button text
+                button.innerText = "Added";
+                // send the data to django server
+                var data = {
+                    "team_name": team_name,
+                    "opponent": '',
+                    'team_id': id
+                }
+                // ajax to save the data asynchrously - make website better (nemaš stalno osvježavanja nakon svakog add)
+                $.ajax({
+                    type: "GET",
+                    url: "/add_team/",
+                    data: data,
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            }
+
+        }
+
+        function deleteTeam(id) {
+            // send the data to django server
+            var data = {
+                'team_id': id
+            }
+            // ajax to save the data asynchrously
+            $.ajax({
+                type: "GET",
+                url: "/delete_team/",
+                data: data,
+                success: function(response) {
+                    console.log(response);
+                    // remove the row from the table
+                    document.getElementById(id).style.display = "none";
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
