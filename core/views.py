@@ -28,7 +28,7 @@ def add_tournament(request):
         team_count = int(request.POST.get('team_count'))
 
         # Create a new tournament
-        new_tournament = Tournament.objects.create(tournament=tournament_name, team_count=team_count/2)
+        new_tournament = Tournament.objects.create(tournament=tournament_name, game_count=team_count/2)
 
         # Populate teams based on the selected number
         teams = []
@@ -185,6 +185,7 @@ def view_results(request, tournament_id):
     tournament = Tournament.objects.get(pk=tournament_id)
     teams = Team.objects.filter(tournament=tournament)
     
+    game_count = Tournament.objects.all().value
     context = {}
     context['teams'] = teams
     context['tournament'] = tournament

@@ -19,7 +19,7 @@ class Tournament(models.Model):
         tournament_date {DateField} -- Date of the tournament
     """
     tournament = models.CharField(max_length=100)
-    team_count = models.IntegerField(choices=team_count_choices)
+    game_count = models.IntegerField(choices=team_count_choices)
     tournament_date = models.DateField(auto_now=True)
     started = models.BooleanField(default=False)
 
